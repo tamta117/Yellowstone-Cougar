@@ -1,0 +1,55 @@
+ID,Sex,Age Class,Reproductive Status,Demographic group,kitten DOB,DOB Est,No. Dependents,Study Period,Year
+M201,Male,Yearling,NA,MY,NA,,NA,MW 2016,2016
+M201,Male,Subadult,NA,SubM,NA,,NA,SS 2016,2016
+F202,Female,Adult,w/ yearlings,MatF (>6),,,3,LW 2016,2016
+F202,Female,Adult,w/ kittens <6 mo.,MatF (<6),5/15/16,Yes,4,SS 2016,2016
+F202,Female,Adult,w/ kittens >6 mo.,MatF (>6),5/15/16,Yes,4,EW 2016,2016
+F202,Female,Adult,w/ kittens >6 mo.,MatF (>6),5/15/16,Yes,4,LW 2017,2017
+F202,Female,Adult,solitary,AdF,NA,,NA,LW 2018,2018
+F202,Female,Adult,solitary,AdF,NA,,NA,SS 2018,2018
+F202,Female,Adult,w/ kittens <6 mo.,MatF (<6),8/11/18,No,,EW 2018,2018
+F202,Female,Adult,w/ kittens >6 mo.,MatF (<6),8/11/18,No,,LW 2019,2019
+F202,Female,Adult,w/ kittens >6 mo.,MatF (>6),8/11/18,No,,SS 2019,2019
+F207,Female,Adult,solitary,AdF,NA,,NA,LW 2017,2017
+F207,Female,Adult,solitary,AdF,NA,,NA,SS 2017,2017
+F207,Female,Adult,w/ kittens <6 mo.,MatF (<6),7/20/17,Yes,1?,EW 2017,2017
+F207,Female,Adult,w/ kittens >6 mo.,MatF (>6),7/20/17,Yes,1?,LW 2018,2018
+F207,Female,Adult,solitary,AdF,NA,,NA,SS 2018,2018
+F207,Female,Adult,solitary,AdF,NA,,NA,LW 2019,2019
+F209,Female,Adult,w/ kittens >6 mo.,MatF (>6),7/15/16,Yes,2,LW 2017,2017
+F209,Female,Adult,w/ kittens >6 mo.,MatF (>6),7/15/16,Yes,2,SS 2017,2017
+F209,Female,Adult,w/ yearlings,MatF (>6),7/15/16,Yes,2,EW 2017,2017
+F209,Female,Adult,w/ yearlings,MatF (>6),7/15/16,Yes,2,LW 2018,2018
+F209,Female,Adult,solitary,AdF,NA,,NA,SS 2018,2018
+F209,Female,Adult,solitary,AdF,NA,,NA,EW 2018,2018
+F209,Female,Adult,solitary,AdF,NA,,NA,LW 2019,2019
+F210,Female,Yearling/ Subadult,NA,SubF,NA,,NA,LW 2018,2018
+F210,Female,Subadult,NA,SubF,NA,,NA,SS 2018,2018
+F210,Female,Subadult,NA,SubF,NA,,NA,EW 2018,2018
+F210,Female,Adult,solitary,AdF,NA,,NA,LW 2019,2019
+F210,Female,Adult,solitary,AdF,NA,,NA,SS 2019,2019
+F210,Female,Adult,w/ kittens <6 mo.,MatF (<6),7/25/19,No,3,EW 2019,2019
+M211,Male,Adult,NA,AdM,NA,,NA,LW 2018,2018
+M211,Male,Adult,NA,AdM,NA,,NA,SS 2018,2018
+M211,Male,Adult,NA,AdM,NA,,NA,EW 2018,2018
+M211,Male,Adult,NA,AdM,NA,,NA,LW 2019,2019
+M211,Male,Adult,NA,AdM,NA,,NA,SS 2019,2019
+M211,Male,Adult,NA,AdM,NA,,NA,EW 2019,2019
+F212,Female,Adult,solitary,AdF,NA,,NA,LW 2018,2018
+F212,Female,Adult,solitary,AdF,7/2/18,No,2,SS 2018,2018
+F212,Female,Adult,w/ kittens <6 mo.,MatF (<6),7/2/18,No,2,EW 2018,2018
+F212,Female,Adult,w/ kittens >6 mo.,MatF (>6),7/2/18,No,2,SS 2019,2019
+F212,Female,Adult,w/ yearlings,MatF (>6),7/2/18,No,2,EW 2019,2019
+M219,Male,Adult,NA,AdM,NA,,NA,LW 2019,2019
+M219,Male,Adult,NA,AdM,NA,,NA,SS 2019,2019
+M220,Male,Adult,NA,AdM,NA,,NA,LW 2020,2020
+M220,Male,Adult,NA,AdM,NA,,NA,SS 2020,2020
+M220,Male,Adult,NA,AdM,NA,,NA,EW 2020,2020
+F221,Female,Yearling,NA,,NA,,NA,LW 2020,2020
+F222,Female,Adult,w/ yearlings,MatF (>6),7/15/18,YES,2,LW 2020,2020
+F222,Female,Adult,w/ kittens <6 mo.,MatF (<6),8/8/20,NO,3,EW 2020,2020
+F223,Female,Adult,w/ kittens >6 mo.,MatF (>6),7/15/19,YES,2,LW 2020,2020
+F223,Female,Adult,w/ kittens >6 mo.,MatF (>6),7/15/19,YES,2,SS 2020,2020
+M224,Male,Adult,NA,AdM,NA,,NA,LW 2020,2020
+F226,Female,Adult,solitary,AdF,NA,,NA,LW 2021,2021
+M227,Male,Adult,NA,AdM,NA,,NA,LW 2021,2021
