@@ -77,4 +77,3 @@ full_dir<-left_join(c15_19,stats)%>%
   ))
 full_dir$utm_e<-gsub("0532908", "532908",
                     as.character(full_dir$utm_e))
-#still need to define early/mid/late winter
