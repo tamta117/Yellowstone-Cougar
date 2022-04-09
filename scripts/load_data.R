@@ -27,12 +27,19 @@ c15$kill_num<-as.character(c15$kill_num)
 #combine data tables
 c15_19<-bind_rows(c15,c19)
 c15_19<-c15_19[complete.cases(c15_19[,1:6]), ] #remove NA
-c15_c19<-parse_date_time(c15_19$dod,orders = c('ymd','dmy'),tz="")
+c15_19$dod<-parse_date_time(c15_19$dod,orders = c('ymd','dmy'),tz="")
 c15_19<-c15_19%>%
   mutate(year=year(dod),
          month=month(dod),
          day=day(dod),
-         jday=yday(dod))
+         jday=yday(dod))%>%
+  mutate(study_period=case_when(
+    between(jday,321,356)~"EW 2019",
+    between(jday,356,365)~"MW 2019",
+    between(jday,1,26)~"MW 2019",
+    between(jday,26,63)~"LW 2019",
+    between(jday,64,166)~"SS 2019"
+  ))
 c15_19$id<-gsub("MTN LION", "", as.character(c15_19$id))
 c15_19$id<-gsub("MT LION", "", as.character(c15_19$id))
 c15_19$id<-gsub("MT. LION", "", as.character(c15_19$id))
@@ -70,6 +77,4 @@ full_dir<-left_join(c15_19,stats)%>%
   ))
 full_dir$utm_e<-gsub("0532908", "532908",
                     as.character(full_dir$utm_e))
-
-write.csv(full_dir,here("data/full_dir.csv"))
 #still need to define early/mid/late winter
