@@ -11,27 +11,27 @@ library(tidyverse)
 ```
 
 ```{r load data, include=FALSE}
-dir_elev<-read.csv(here("data/all_elev.csv"))
+dir_all<-read.csv(here("data/all_elev.csv"))
   #subset(species=="elk"|species=="mule deer")
 ```
 
 ```{r plot}
-ggplot(dir_elev)+
+ggplot(dir_all)+
          #filter(species=="elk"|species=="mule deer"))+
   geom_boxplot(aes(x=species,y=elevation))+
   theme(axis.text.x=element_text(angle=45, hjust=1))
-ggplot(dir_elev)+
+ggplot(dir_all)+
   geom_boxplot(aes(x=season,y=elevation))
-ggplot(dir_elev%>%
+ggplot(dir_all%>%
          filter(species=="elk"|species=="mule deer"))+
   geom_point(aes(x=jday,y=elevation,color=species))
 ```
 Looks like it's not a linear relationship but exponential. Therefore, we will perform a generalized linear model.
 
 ```{r change data to binary}
-dir_mod<-dir_elev%>%
-  subset(dir_elev$age!="unk")%>%
-  subset(dir_elev$season=="winter")%>%
+dir_mod<-dir_all%>%
+  subset(dir_all$age!="unk")%>%
+  subset(dir_all$season=="winter")%>%
   mutate(MUDE=ifelse(species=="mule deer",1,0))%>%
   mutate(ELK=ifelse(species=="elk",1,0))%>%
   mutate(age.n=case_when(
