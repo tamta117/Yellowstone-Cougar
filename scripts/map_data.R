@@ -4,6 +4,7 @@ library(rgdal)
 library(mapview)
 library(here)
 library(RColorBrewer)
+library(elevatr)
 
 #make utm numeric
 all$utm_e<-as.numeric(all$utm_e,replace=FALSE)
@@ -37,17 +38,17 @@ proj4string(map) <- CRS('+proj=longlat +datum=WGS84')
 mapview(map)
 mapview(map, map.types = c("Esri.WorldImagery"))
 (m1<-mapview(map, zcol="species", map.types = c("Esri.WorldImagery"),
-             col.regions=brewer.pal(9,"Set1"),alpha=0))
+             col.regions=brewer.pal(9,"Set1")))
 (m2<-mapview(map, zcol="season", map.types = c("Esri.WorldImagery"),
              col.regions=brewer.pal(4,"Set1")))
 
 #save
-mapshot(m1, file = here("figures/map.png"))
-mapshot(m1, url = paste0(getwd(), "figures/map.html"))
+mapshot(m1, url = paste0(getwd(), "/figures/map.html"))
 
 #fetch elevation data
 elev<-dir%>%
   select(long,lat)
+prj_dd="EPSG:4326"
 examp_sp <- SpatialPoints(elev, proj4string = CRS(prj_dd))
 elev_a <- get_elev_point(examp_sp, prj = prj_dd, src = "epqs")
 elev_a <- as.data.frame(elev_a)
@@ -73,3 +74,6 @@ proj4string(dir_elev) <- CRS('+proj=longlat +datum=WGS84')
             col.regions=brewer.pal(9,"Set1"))+
     mapview(map, zcol="season", map.types = c("Esri.WorldImagery"),
             col.regions=brewer.pal(4,"Set1")))
+
+mapshot(m3, url = paste0(getwd(), "/figures/map2.html"))
+#show in new window to export
