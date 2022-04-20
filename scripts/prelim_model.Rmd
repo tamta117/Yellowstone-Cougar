@@ -8,6 +8,7 @@ output: html_document
 ```{r load library, include=FALSE}
 library(here)
 library(tidyverse)
+library(ggplot2)
 ```
 
 ```{r load data, include=FALSE}
@@ -25,6 +26,14 @@ ggplot(dir_all)+
 ggplot(dir_all%>%
          filter(species=="elk"|species=="mule deer"))+
   geom_point(aes(x=jday,y=elevation,color=species))
+ggplot(dir_all%>%
+         filter(species=="elk"|species=="mule deer")%>%
+         filter(age!="unk"))+
+  geom_boxplot(aes(x=age,y=elevation))
+ggplot(dir_all%>%
+         filter(species=="elk"|species=="mule deer")%>%
+         filter(age!="unk"))+
+  geom_point(aes(x=jday,y=elevation,color=age))
 ```
 Looks like it's not a linear relationship but exponential. Therefore, we will perform a generalized linear model.
 
