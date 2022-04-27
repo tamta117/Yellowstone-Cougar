@@ -9,6 +9,7 @@ output: html_document
 library(here)
 library(tidyverse)
 library(ggplot2)
+library(lme4)
 ```
 
 ```{r load data, include=FALSE}
@@ -21,6 +22,17 @@ ggplot(dir_all)+
          #filter(species=="elk"|species=="mule deer"))+
   geom_boxplot(aes(x=species,y=elevation))+
   theme(axis.text.x=element_text(angle=45, hjust=1))
+
+ggplot(dir_mod)+
+  geom_boxplot(aes(x=species,y=elevation))+
+  geom_jitter(aes(x=species,y=elevation),shape=16,
+              position=position_jitter(0.2))+
+  xlab("Species")+
+  ylab("Elevation (m)")+
+  scale_x_discrete(labels=c("Elk","Mule deer"))
+ggsave(here("figures/elev_species_box.png"),width=5,height=3,
+       units="in",dpi=300)
+
 ggplot(dir_all)+
   geom_boxplot(aes(x=season,y=elevation))
 ggplot(dir_all%>%
@@ -34,41 +46,56 @@ ggplot(dir_all%>%
          filter(species=="elk"|species=="mule deer")%>%
          filter(age!="unk"))+
   geom_point(aes(x=jday,y=elevation,color=age))
+
+ggplot(dir_bin)+
+  geom_bar(aes(x=elev.bin,y=nobs,fill=as.factor(ELK)),
+           stat="identity",position=position_dodge(0.9))+
+  theme(axis.text.x=element_text(angle=45, hjust=1))+
+  xlab("Elevation (m)")+
+  ylab("Number of observations")+
+  scale_fill_manual(values = c("#39638b", "#26a185"), 
+                    name = "Species", labels=c("Mule deer",
+                                               "Elk"))
+ggsave(here("figures/elev_species.png"),width=5,height=3,
+       units="in",dpi=300)
 ```
 Looks like it's not a linear relationship but exponential. Therefore, we will perform a generalized linear model.
 
 ```{r change data to binary}
 dir_mod<-dir_all%>%
-  subset(dir_all$age!="unk")%>%
-  subset(dir_all$season=="winter")%>%
+  subset(dir_all$season=="winter" & dir_all$species=="mule deer" | dir_all$species=="elk")%>%
   mutate(MUDE=ifelse(species=="mule deer",1,0))%>%
   mutate(ELK=ifelse(species=="elk",1,0))%>%
-  mutate(age.n=case_when(
-    age=="young"~1,
-    age=="yearling"~2,
-    age=="adult"~3,
-    age=="old adult"~4
-  ))
-  # mutate(PRHO=ifelse(species=="pronghorn",1,0))%>%
-  # mutate(MAMO=ifelse(species=="marmot",1,0))%>%
-  # mutate(BISH=ifelse(species=="bh sheep",1,0))
+  mutate(elev=case_when(
+    elevation<=1900~"lowest",
+    elevation>1900 & elevation<=2200~"low",
+    elevation>2200 & elevation<=2500~"high",
+    elevation>2500~"highest"))%>%
+  separate(elevation,
+           into=c("elev.bin","ext"),
+           sep=2, remove=FALSE)%>%
+  select(-ext)
+dir_mod$elev.bin<-paste0(dir_mod$elev.bin, "00")
+dir_bin<-dir_mod%>%
+  group_by(elev.bin,ELK,MUDE)%>%
+  summarize(nobs=n())
 ```
 The models that we will run once we have complete dataset from GIS team:
-name<-glm(ELK~elevation, distance to water, distance to roads, canopy cover)
+name<-glm(ELK~elevation + distance to water + distance to roads + canopy cover)
 
-name<-glm(MUDE~elevation, distance to water, distance to roads, canopy cover)
+name<-glm(MUDE~elevation + distance to water + distance to roads + canopy cover)
 
-name<-glm(age.n~elevation, distance to water, distance to roads, canopy cover)
+name<-glm(age.n~elevation + distance to water + distance to roads + canopy cover)
 
 ```{r model for elk}
-m.elk<-glm(ELK~elevation+age+jday+jday^2,data=dir_mod,family=binomial)
+m.elk<-glm(ELK~elevation,data=dir_mod,family=binomial)
 summary(m.elk)
 ```
 Elevation does not have a significant effect on the probability of getting an elk.
 Compared to adult, old adult, yearling, and young elk has a significantly higher probability of being killed.
 
 ```{r model for mule deer}
-m.mude<-lm(elevation~season,data=dir_mod)
+m.mude<-glm(MUDE~elevation,data=dir_mod,family="binomial")
 summary(m.mude)
 ```
 
