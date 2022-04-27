@@ -5,6 +5,7 @@ library(mapview)
 library(here)
 library(RColorBrewer)
 library(elevatr)
+library(tidyverse)
 
 #make utm numeric
 all$utm_e<-as.numeric(all$utm_e,replace=FALSE)
@@ -46,6 +47,7 @@ mapview(map, map.types = c("Esri.WorldImagery"))
 mapshot(m1, url = paste0(getwd(), "/figures/map.html"))
 
 #fetch elevation data
+dir<-read_csv(here("data/all.csv"))
 elev<-dir%>%
   select(long,lat)
 prj_dd="EPSG:4326"
@@ -64,16 +66,18 @@ coord<-dir_elev%>%
 write.csv(coord,here("data/coord.csv"))
 
 #prepare
-coordinates(dir_elev) <- dir_elev[, c('long', 'lat')]
-proj4string(dir_elev) <- CRS('+proj=longlat +datum=WGS84')
+dir_map<-dir_elev%>%
+  subset(dir_elev$season=="winter")
+dir_map<-dir_map%>%
+  subset(species=="mule deer" | species =="elk")
+  
+coordinates(dir_map) <- dir_map[, c('long', 'lat')]
+proj4string(dir_map) <- CRS('+proj=longlat +datum=WGS84')
 
 #map
-(m3<-mapview(dir_elev, zcol="elevation", map.types = c("Esri.WorldImagery"),
-             col.regions=brewer.pal(4,"YlGnBu"))+
-    mapview(map, zcol="species", map.types = c("Esri.WorldImagery"),
-            col.regions=brewer.pal(9,"Set1"))+
-    mapview(map, zcol="season", map.types = c("Esri.WorldImagery"),
-            col.regions=brewer.pal(4,"Set1")))
+mapview(dir_map, zcol="elevation", map.types = c("Esri.WorldImagery"),
+             col.regions=brewer.pal(9,"YlGnBu"))+
+    mapview(dir_map, zcol="species", map.types = c("Esri.WorldImagery"))
 
 mapshot(m3, url = paste0(getwd(), "/figures/map2.html"))
 #show in new window to export
