@@ -63,18 +63,17 @@ Looks like it's not a linear relationship but exponential. Therefore, we will pe
 
 ```{r change data to binary}
 dir_mod<-dir_all%>%
-  subset(dir_all$season=="winter" & dir_all$species=="mule deer" | dir_all$species=="elk")%>%
+  subset(dir_all$season=="winter")
+dir_mod<-dir_mod%>%
+  subset(dir_mod$species=="mule deer" | 
+           dir_mod$species=="elk")%>%
   mutate(MUDE=ifelse(species=="mule deer",1,0))%>%
   mutate(ELK=ifelse(species=="elk",1,0))%>%
-  mutate(elev=case_when(
-    elevation<=1900~"lowest",
-    elevation>1900 & elevation<=2200~"low",
-    elevation>2200 & elevation<=2500~"high",
-    elevation>2500~"highest"))%>%
   separate(elevation,
            into=c("elev.bin","ext"),
            sep=2, remove=FALSE)%>%
-  select(-ext)
+  select(-ext)%>%
+  filter(!is.na(season))
 dir_mod$elev.bin<-paste0(dir_mod$elev.bin, "00")
 dir_bin<-dir_mod%>%
   group_by(elev.bin,ELK,MUDE)%>%

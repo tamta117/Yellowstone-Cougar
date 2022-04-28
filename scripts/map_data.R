@@ -8,17 +8,18 @@ library(elevatr)
 library(tidyverse)
 
 #make utm numeric
-all$utm_e<-as.numeric(all$utm_e,replace=FALSE)
-all$utm_n<-as.numeric(all$utm_n,replace=FALSE)
+full.map<-full_dir
+full.map$utm_e<-as.numeric(full.map$utm_e,replace=FALSE)
+full.map$utm_n<-as.numeric(full.map$utm_n,replace=FALSE)
 
 #define coordinates
-coordinates(all) <- all[, c('utm_e', 'utm_n')]
+coordinates(full.map) <- full.map[, c('utm_e', 'utm_n')]
 
 #assign crs project
-proj4string(all) <- CRS('+proj=utm +zone=12 +datum=WGS84')
+proj4string(full.map) <- CRS('+proj=utm +zone=12 +datum=WGS84')
 
 #transform to latitude/longtitude
-map <- spTransform(all, CRSobj = CRS('+proj=longlat +datum=WGS84'))
+map <- spTransform(full.map, CRSobj = CRS('+proj=longlat +datum=WGS84'))
 
 #convert to data frame
 map <- as.data.frame(map)
@@ -66,11 +67,6 @@ coord<-dir_elev%>%
 write.csv(coord,here("data/coord.csv"))
 
 #prepare
-dir_map<-dir_elev%>%
-  subset(dir_elev$season=="winter")
-dir_map<-dir_map%>%
-  subset(species=="mule deer" | species =="elk")
-  
 coordinates(dir_map) <- dir_map[, c('long', 'lat')]
 proj4string(dir_map) <- CRS('+proj=longlat +datum=WGS84')
 
