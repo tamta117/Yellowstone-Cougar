@@ -7,7 +7,7 @@ output: html_document
 #### To do list
 -generate random spatial points
 -export GIS data
--anti_join by lat/long with existing directory to form kill column with use/nonuse -> 1/0
+-check with Alex about model
 
 
 #### Setup
