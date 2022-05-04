@@ -1,0 +1,71 @@
+---
+title: "final_model"
+author: "Tam Ta"
+date: "5/3/2022"
+output: html_document
+---
+#### To do list
+-generate random spatial points
+-export GIS data
+-anti_join by lat/long with existing directory to form kill column with use/nonuse -> 1/0
+
+
+#### Setup
+```{r load library, include=FALSE}
+library(here)
+library(tidyverse)
+library(dplyr)
+library(raster) #for scaling
+```
+
+```{r load data, include=FALSE}
+gis<-read.csv(here(".csv"))
+odata<-read.csv(here("data/all_elev.csv"))
+```
+
+#### Prepare datasets for model
+
+```{r make kill column}
+yeskill<-left_join(odata,gis)%>%
+  mutate(kill=1)
+nokill<-anti_join(gis,odata,by=c("long","lat"))%>%
+  mutate(kill=0)
+premod<-bind_rows(nokill,yeskill)%>%
+  select(kill,species,coug_sex,elevation,canopy_cover,roads,
+         water)
+```
+
+Scale any numerical columns, except lat/long and use/nonuse. This would involve elevation, distance to water, distance to roads, and canopy cover. Would need to determine column numbers.
+
+```{r scale}
+premod.scale <- scale(premod[3:6])
+
+#add back any columns that we did not scale
+mod <- data.frame("kill" = premod$kill, 
+                  "species" = premod$species,
+                  "coug_sex" = premod$coug_sex, 
+                  premod.scale)
+```
+
+```{r filter data, include=FALSE}
+elk<-mod%>%
+  filter(species=="elk")
+mude<-mod%>%
+  filter(species=="mule deer")
+fem<-mod%>%
+  filter(coug_sex=="F")
+male<-mod%>%
+  filter(coug_sex=="M")
+```
+
+#### Models
+```{r null model}
+m.null <- glm(kill ~ 1, family = binomial, data=mod)
+summary(m.null)
+```
+
+```{r elk model}
+m.elk<-glm(kill~elevation+canopy_cover+roads+water,data=elk,
+          family=binomial)
+summary(m.elk)
+```

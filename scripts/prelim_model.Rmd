@@ -78,6 +78,12 @@ dir_mod$elev.bin<-paste0(dir_mod$elev.bin, "00")
 dir_bin<-dir_mod%>%
   group_by(elev.bin,ELK,MUDE)%>%
   summarize(nobs=n())
+dir_mude<-dir_mod%>%
+  group_by(elev.bin,MUDE)%>%
+  summarize(nobs=n())
+dir_elk<-dir_mod%>%
+  group_by(elev.bin,ELK)%>%
+  summarize(nobs=n())
 ```
 The models that we will run once we have complete dataset from GIS team:
 name<-glm(ELK~elevation + distance to water + distance to roads + canopy cover)
@@ -88,13 +94,16 @@ name<-glm(age.n~elevation + distance to water + distance to roads + canopy cover
 
 ```{r model for elk}
 m.elk<-glm(ELK~elevation,data=dir_mod,family=binomial)
+m.elk<-lm(nobs~as.factor(elev.bin),data=dir_elk)
 summary(m.elk)
+
 ```
 Elevation does not have a significant effect on the probability of getting an elk.
 Compared to adult, old adult, yearling, and young elk has a significantly higher probability of being killed.
 
 ```{r model for mule deer}
 m.mude<-glm(MUDE~elevation,data=dir_mod,family="binomial")
+m.mude<-lm(nobs~elev.bin,data=dir_mude)
 summary(m.mude)
 ```
 

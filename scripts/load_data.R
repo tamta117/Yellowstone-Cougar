@@ -48,54 +48,6 @@ all.full<-all%>%
          day=day(dod),
          jday=yday(dod))%>%
   mutate(species=ifelse(species=="deer (mule)","mule deer",species))%>%
-  # mutate(species=case_when(
-  #   species=="Elk"~"elk",
-  #   species=="Deer (unknown)"~"unk deer",
-  #   species=="Deer (mule)"~"mule deer",
-  #   species=="Deer (whitetailed)"~"wt deer",
-  #   species=="Porcupine"~"other",
-  #   species=="Bighorn sheep"~"bh sheep",
-  #   species=="Other"~"other",
-  #   species=="MULE DEER"~"mule deer",
-  #   species=="ELK"~"elk",
-  #   species=="PORCUPINE"~"other",
-  #   species=="MARMOT"~"other",
-  #   species=="RED FOX"~"other",
-  #   species=="DEER"~"unk deer",
-  #   species=="COTTONTAIL RABBIT"~"other",
-  #   species=="WHITE-TAILED DEER"~"wt deer",
-  #   species=="GROUSE"~"other",
-  #   species=="YELLOW-BELLIED MARMOT"~"other",
-  #   species=="PRONGHORN"~"pronghorn",
-  #   species=="COYOTE"~"other",
-  #   species=="COUGAR"~"other",
-  #   species=="DEER SPP"~"unk deer",
-  #   species=="BEAVER"~"other",
-  #   species=="BIGHORN SHEEP"~"bh sheep",
-  #   species=="MOUNTAIN GOAT"~"other",
-  #   species=="UNKNOWN"~"unk",
-  #   species=="GROUND SQIRREL"~"other",
-  #   species=="FOX"~"other",
-  #   species=="YELLOW-RUMPED WARBLER"~"other",
-  #   species=="UNKNOWN SMALL MAMMAL"~"other",
-  #   species=="MOUNTAIN COTTONTAIL"~"other"))%>%
-  # mutate(age=case_when(
-  #   age=="Calf/fawn"~"young",
-  #   age=="Unknown"~"unk",
-  #   age=="Yearling"~"yearling",
-  #   age=="Old adult (10+ yrs)"~"old adult",
-  #   age=="Adult"~"adult",
-  #   age=="FAWN"~"young",
-  #   age=="ADULT"~"adult",
-  #   age=="YEARLING"~"yearling",
-  #   age=="CALF"~"young",
-  #   age=="OLD ADULT"~"old adult",
-  #   age=="UNKNOWN"~"unk",
-  #   age=="CALF/FAWN"~"young",
-  #   age=="KID"~"young",
-  #   age=="LAMB"~"young",
-  #   age=="KIT"~"young",
-  #   age=="PUP"~"young"))%>%
   mutate(season=case_when(
     between(jday,355,365)~"winter",
     between(jday,1,79)~"winter",
@@ -104,13 +56,6 @@ all.full<-all%>%
     between(jday,266,354)~"fall"))%>%
   filter(species=="mule deer" | species=="elk")%>%
   filter(season=="winter")
-  # mutate(study_period=case_when(
-  #   between(jday,321,356)~"EW 2019",
-  #   between(jday,356,365)~"MW 2019",
-  #   between(jday,1,26)~"MW 2019",
-  #   between(jday,26,63)~"LW 2019",
-  #   between(jday,64,166)~"SS 2019"
-  # ))
 all.full$id<-gsub("MTN LION", "", as.character(all.full$id))
 all.full$id<-gsub("MT LION", "", as.character(all.full$id))
 all.full$id<-gsub("MT. LION", "", as.character(all.full$id))
@@ -125,27 +70,5 @@ stats<-distinct(stats,id,.keep_all = TRUE)
 #join demographics and full data
 all.full$id<-gsub(" ", "", as.character(all.full$id)) #remove space from id
 full_dir<-left_join(all.full,stats)
-  # mutate(species=case_when(
-  #   species=="Elk"~"elk",
-  #   species=="Deer (unknown)"~"unk deer",
-  #   species=="Deer (mule)"~"mule deer",
-  #   species=="Deer (whitetailed)"~"wt deer",
-  #   species=="Porcupine"~"porcupine",
-  #   species=="Bighorn sheep"~"bh sheep",
-  #   species=="Other"~"other",
-  #   species=="MULE DEER"~"mule deer",
-  #   species=="ELK"~"elk",
-  #   species=="PORCUPINE"~"porcupine"))%>%
-  # mutate(age=case_when(
-  #   age=="Calf/young"~"young",
-  #   age=="Unknown"~"unk",
-  #   age=="Yearling"~"yearling",
-  #   age=="Old adult (10+ yrs)"~"old adult",
-  #   age=="Adult"~"adult",
-  #   age=="young"~"young",
-  #   age=="ADULT"~"adult",
-  #   age=="YEARLING"~"yearling",
-  #   age=="CALF"~"young"
-  # ))
 full_dir$utm_e<-gsub("0532908", "532908",
                     as.character(full_dir$utm_e))
