@@ -31,8 +31,7 @@ yeskill<-left_join(odata,gis)%>%
 nokill<-anti_join(gis,odata,by=c("long","lat"))%>%
   mutate(kill=0)
 premod<-bind_rows(nokill,yeskill)%>%
-  select(kill,species,coug_sex,elevation,canopy_cover,roads,
-         water)
+  select(kill,species,coug_sex,elevation,canopy_cover,slope)
 ```
 
 Scale any numerical columns, except lat/long and use/nonuse. This would involve elevation, distance to water, distance to roads, and canopy cover. Would need to determine column numbers.
@@ -65,7 +64,7 @@ summary(m.null)
 ```
 
 ```{r elk model}
-m.elk<-glm(kill~elevation+canopy_cover+roads+water,data=elk,
+m.elk<-glm(kill~elevation+canopy_cover+slope,data=elk,
           family=binomial)
 summary(m.elk)
 ```
