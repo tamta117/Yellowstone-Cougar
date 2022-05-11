@@ -62,9 +62,12 @@ dir_elev<-left_join(dir,elev_a)%>%
   select(-unit)
 dir_elev<-distinct(dir_elev)
 write.csv(dir_elev,here("data/all_elev.csv"))
+dir_elev<-read.csv(here("data/all_elev.csv"))%>%
+  distinct(kill_num,.keep_all = TRUE)
 coord<-dir_elev%>%
   select(long,lat)
 write.csv(coord,here("data/coord.csv"))
+dir_map<-dir_elev
 
 #prepare
 coordinates(dir_map) <- dir_map[, c('long', 'lat')]

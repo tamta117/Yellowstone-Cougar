@@ -8,6 +8,7 @@ output: html_document
 -generate random spatial points
 -export GIS data
 -check with Alex about model
+-R meet up?
 
 
 #### Setup

@@ -1,0 +1,47 @@
+---
+title: "anova_ttest"
+author: "Tam Ta"
+date: "5/11/2022"
+output: html_document
+---
+
+#### Setup
+```{r load library, include=FALSE}
+library(here)
+library(tidyverse)
+library(dplyr)
+```
+
+```{r load data, include=FALSE}
+odata<-read.csv(here("data/all_elev.csv"))%>%
+  distinct(kill_num,.keep_all = TRUE)
+t.elk<-odata%>%
+  filter(species=="elk")%>%
+  select(elevation)
+t.mude<-odata%>%
+  filter(species=="mule deer")%>%
+  select(elevation)
+# anova<-odata%>%
+#   separate(elevation,
+#            into=c("elev.bin","ext"),
+#            sep=2, remove=FALSE)%>%
+#   select(elev.bin,species)%>%
+#   mutate(end="00")%>%
+#   unite("elevation",elev.bin,end,sep="")%>%
+#   group_by(elevation,species)%>%
+#   summarize(nobs=n())
+# a.mude<-anova%>%
+#   filter(species=="mule deer")
+# a.elk<-anova%>%
+#   filter(species=="elk")
+```
+
+```{r anova}
+one.way<-aov(elevation~species, data=odata)
+summary(one.way)
+```
+
+```{r t-test}
+t.test(t.mude,t.elk, var.equal=FALSE)
+t.test(elevation~species,data=odata, var.equal=FALSE)
+```
