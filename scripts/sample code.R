@@ -96,3 +96,6 @@ sd(auc.frame$auc.frame) #the sd of values
 #--Mapping a risk surface for the whole area
 #--Comparing this surface with elk vigilance
 
+
+#Test
+
