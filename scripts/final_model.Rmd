@@ -20,8 +20,10 @@ library(raster) #for scaling
 ```
 
 ```{r load data, include=FALSE}
-gis<-read.csv(here(".csv"))
-odata<-read.csv(here("data/all_elev.csv"))
+kill<-read.csv(here("data/.csv"))
+random<-read.csv(here("data/.csv"))
+odata<-read.csv(here("data/all_elev.csv"))%>%
+  distinct(kill_num,.keep_all = TRUE)
 ```
 
 #### Prepare datasets for model
@@ -32,7 +34,7 @@ yeskill<-left_join(odata,gis)%>%
 nokill<-anti_join(gis,odata,by=c("long","lat"))%>%
   mutate(kill=0)
 premod<-bind_rows(nokill,yeskill)%>%
-  select(kill,species,coug_sex,elevation,canopy_cover,slope)
+  select(kill,species,elevation,canopy_cover,slope)
 ```
 
 Scale any numerical columns, except lat/long and use/nonuse. This would involve elevation, distance to water, distance to roads, and canopy cover. Would need to determine column numbers. Scaling would help standardize the numerical covariates --> allows us to compare each coefficient to each other.
@@ -52,10 +54,6 @@ elk<-mod%>%
   filter(species=="elk")
 mude<-mod%>%
   filter(species=="mule deer")
-fem<-mod%>%
-  filter(coug_sex=="F")
-male<-mod%>%
-  filter(coug_sex=="M")
 ```
 
 #### Models
