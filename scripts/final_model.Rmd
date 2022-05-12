@@ -69,7 +69,7 @@ m.elk<-glm(kill~elevation+canopy_cover+slope,data=elk,
 summary(m.elk)
 ```
 
-```{aic table}
+```{r aic table}
 library(AICcmodavg)
 
 #the models you're comparing
