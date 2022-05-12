@@ -17,10 +17,10 @@ odata<-read.csv(here("data/all_elev.csv"))%>%
   distinct(kill_num,.keep_all = TRUE)
 t.elk<-odata%>%
   filter(species=="elk")%>%
-  select(elevation)
+  dplyr::select(elevation)
 t.mude<-odata%>%
   filter(species=="mule deer")%>%
-  select(elevation)
+  dplyr::select(elevation)
 # anova<-odata%>%
 #   separate(elevation,
 #            into=c("elev.bin","ext"),

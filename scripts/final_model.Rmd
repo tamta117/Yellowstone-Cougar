@@ -35,7 +35,7 @@ premod<-bind_rows(nokill,yeskill)%>%
   select(kill,species,coug_sex,elevation,canopy_cover,slope)
 ```
 
-Scale any numerical columns, except lat/long and use/nonuse. This would involve elevation, distance to water, distance to roads, and canopy cover. Would need to determine column numbers.
+Scale any numerical columns, except lat/long and use/nonuse. This would involve elevation, distance to water, distance to roads, and canopy cover. Would need to determine column numbers. Scaling would help standardize the numerical covariates --> allows us to compare each coefficient to each other.
 
 ```{r scale}
 premod.scale <- scale(premod[3:6])
@@ -62,6 +62,7 @@ male<-mod%>%
 ```{r null model}
 m.null <- glm(kill ~ 1, family = binomial, data=mod)
 summary(m.null)
+aic(m.null)
 ```
 
 ```{r elk model}
