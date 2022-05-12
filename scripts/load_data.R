@@ -72,3 +72,5 @@ all.full$id<-gsub(" ", "", as.character(all.full$id)) #remove space from id
 full_dir<-left_join(all.full,stats)
 full_dir$utm_e<-gsub("0532908", "532908",
                     as.character(full_dir$utm_e))
+
+head(full_dir)
