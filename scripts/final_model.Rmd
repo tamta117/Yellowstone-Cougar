@@ -5,10 +5,10 @@ date: "5/3/2022"
 output: html_document
 ---
 #### To do list
--generate random spatial points
--export GIS data
--check with Alex about model
--R meet up?
+-wait for data
+-work on brochures and presentations
+-figure out how to make the graphs
+-run the models
 
 
 #### Setup
@@ -20,61 +20,64 @@ library(raster) #for scaling
 ```
 
 ```{r load data, include=FALSE}
-kill<-read.csv(here("data/.csv"))
-random<-read.csv(here("data/.csv"))
-odata<-read.csv(here("data/all_elev.csv"))%>%
-  distinct(kill_num,.keep_all = TRUE)
+kill<-read.csv(here("data/.csv"))%>%
+  mutate(kill=1)
+random<-read.csv(here("data/.csv"))%>%
+  mutate(kill=0)
 ```
 
 #### Prepare datasets for model
 
-```{r make kill column}
-yeskill<-left_join(odata,gis)%>%
-  mutate(kill=1)
-nokill<-anti_join(gis,odata,by=c("long","lat"))%>%
-  mutate(kill=0)
-premod<-bind_rows(nokill,yeskill)%>%
+```{r join kills and random points}
+premod<-bind_rows(random,kill)%>%
   select(kill,species,elevation,canopy_cover,slope)
 ```
 
-Scale any numerical columns, except lat/long and use/nonuse. This would involve elevation, distance to water, distance to roads, and canopy cover. Would need to determine column numbers. Scaling would help standardize the numerical covariates --> allows us to compare each coefficient to each other.
+Scale any numerical columns, except lat/long and use/nonuse. This would involve elevation, slope, and canopy cover. Scaling would help standardize the numerical covariates --> allows us to compare coefficients to each other.
 
 ```{r scale}
-premod.scale <- scale(premod[3:6])
+premod.scale <- scale(premod[3:5])
 
 #add back any columns that we did not scale
-mod <- data.frame("kill" = premod$kill, 
-                  "species" = premod$species,
-                  "coug_sex" = premod$coug_sex, 
+mod <- data.frame("kill" = premod$kill, "species" = premod$species,
                   premod.scale)
 ```
 
 ```{r filter data, include=FALSE}
 elk<-mod%>%
-  filter(species=="elk")
-mude<-mod%>%
-  filter(species=="mule deer")
+  filter(species=="elk" | kill = 0)
+mule<-mod%>%
+  filter(species=="mule deer" | kill = 0)
 ```
 
-#### Models
+#### Models & AIC
+
+Null model to compare to logistic regressions. If AIC of logistics are above or <2 below null model, then the relationships are not significant. 
 ```{r null model}
 m.null <- glm(kill ~ 1, family = binomial, data=mod)
 summary(m.null)
-aic(m.null)
 ```
 
 ```{r elk model}
-m.elk<-glm(kill~elevation+canopy_cover+slope,data=elk,
+m.elk<-glm(kill~elevation+canopy_cover+slope, data=elk,
           family=binomial)
 summary(m.elk)
 ```
+
+```{r mule deer model}
+m.mule<-glm(kill~elevation+canopy_cover+slope, data=mule,
+          family=binomial)
+summary(m.elk)
+```
+
+Lower AIC = better. Choose model with the lowest AIC. Make sure it is >2 below the null.
 
 ```{r aic table}
 library(AICcmodavg)
 
 #the models you're comparing
-model.set <- list(mod1, mod2, mod3, etc)
-model.names <- c("mod1", "mod2", "mod3", "etc.")
+model.set <- list(m.null, m.elk, m.mule)
+model.names <- c("null", "elk", "mule deer")
 
 #makes the table
 aic = aictab(model.set, modnames = model.names)
