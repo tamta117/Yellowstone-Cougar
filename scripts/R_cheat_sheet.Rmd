@@ -1,0 +1,243 @@
+---
+title: "Coding Cheat Sheet"
+author: "Tam Ta"
+date: "3/30/2022"
+output: html_document
+---
+
+## Data Visualization
+```{r plot with points and lines}
+library(ggplot2)
+ggplot(df, aes(x=column,y=column,group=1))+
+  xlab("")+
+  ylab("")+
+  ggtitle("")+
+  geom_point()+geom_line()
+```
+
+```{r bar graph with categorical and continuous variables}
+#number of prey species killed by sex
+library(ggplot2)
+ggplot(df)+
+  geom_bar(aes(x = prey_species, y = observations, 
+               fill = as.factor(sex)),  stat = "identity", 
+           position = position_dodge(0.9))+
+  xlab("")+
+  ylab("")+
+  theme(panel.background = element_rect(fill="white"),
+        panel.grid = element_blank())+
+  scale_fill_manual(values = c("#39638b","#26a185"), name = "sex")
+```
+
+```{r plot with points, trendline, equation, and R2 }
+#set significant figures or rounding
+trace(ggpubr:::.stat_lm, edit = TRUE)
+
+ggplot(df, aes(x=column1,y=column2))+
+  xlab("")+
+  ylab("")+
+  ggtitle("")
+  geom_point()+
+  geom_smooth(method=lm, se=FALSE, linetype="dashed", 
+              size=0.5,color="black")+
+  stat_regline_equation(label.y = 0.7,
+                        aes(label = ..eq.label..),size=3)+
+  stat_regline_equation(label.y = 0.5, 
+                        aes(label = ..rr.label..),size=3)
+```
+
+```{r save plots as figures}
+ggsave("", dpi=300)
+```
+
+## Data Editing
+
+```{r read in data}
+df<-read.csv("path/name.csv") #work for txt and csv
+df<-read_excel("path/name.xlsx")
+```
+
+```{r simple data checks}
+#see all column names
+colnames(df)
+#see each unique value in a column
+unique(df$column)
+#see the number of unique values
+length(unique(df$column))
+#see range of values in column
+range(df$column)
+#change column names
+colnames(df)<-c('new_column','new_column1')
+#sneaky way to change column name
+name<-df%>%
+  mutate(new_column=old_column)%>%
+  select(-old_column)
+#count number of observations in column, including NAs
+table(df$column, useNA="always")
+```
+
+```{r change data format}
+#vector to data table
+name<-as.data.table(df, TRUE)
+name<-as.data.frame(df)
+#integer to character
+as.factor(df$column) 
+#character to logical
+mutate(df$column=ifelse(column=="true",TRUE,FALSE))
+#character to numeric
+df$column<-as.numeric(df$column)
+name<-sapply(df,as.numeric)
+#numeric to character
+df$column<-as.character(df$column)
+name<-sapply(df,as.character)
+#scientific to numbers, use before converting to other format
+df$column<-format(df$column,scientific=FALSE,trim=TRUE)
+```
+
+```{r combine stuff}
+#combine data tables
+name<-rbindlist(list(df1,df2,df3))
+name<-bind_rows(df1,df2)
+
+#join all values in df2 that matches df1 - retain rows in df1
+#can use %>% after
+name<-left_join(df1,df2)
+
+#combine columns, remove=FALSE retains original column
+df<-df%>%
+  unite("new_column", column1:column2, remove=FALSE, sep="")
+```
+
+```{r filter}
+#filter for a specific value
+name<-df%>%
+  subset(df$column=="")
+name<-df%>%
+  filter(column=="")
+
+#filter for a range of values
+name<-df%>%
+  subset(df$column==c("","",""))
+name<-df%>%
+  subset(df$column1!="" & df$column2!="")
+name<-df%>%
+  subset(df$column1!="" | df$column2!="")
+
+#filter for unique values in a column
+name<-distinct(df,column,.keep_all = TRUE)
+name<-df%>%
+  distinct(column,.keep_all = TRUE)
+
+#remove NAs
+name<-df%>%
+  filter(!is.na(column))
+name=filter(!is.na(column))
+
+#remove NAs in a range of columns
+#remove NAs from columns 1 through 5
+name=name[complete.cases(name[,1:5]),]
+```
+
+```{r change values in a column to something else}
+#define all unique values in column
+name<-df%>%
+  mutate(new_column=case_when(
+    column=="value"~"something else",
+    column=="value1"~"something else1"
+  ))
+
+#replace values in a column with something else
+name<-df%>% 
+  mutate(new_column=ifelse(column==0,"",""))
+name<-df%>%
+  mutate(new_column=ifelse(column=="","",column))
+
+#replace specific characters in a column
+df$new_column<-gsub("character", "something else",
+                    as.character(df$column))
+
+#pad values in a column, good for integer and symbols
+df$new_column<-str_pad(df$column, width=6, side = "left", 
+                       pad = "0")
+
+#pad values to the left, good for characters and integer
+df$new_column<-sub("^", "new values", df$column)
+
+#pad values to the right, good for characters and integer
+df$new_column<-paste0(df$column, "new values")
+
+#separate values in a column
+name<-df%>%
+  separate(`column`,
+           into=c("new_column1","new_column2","new_column3"),
+           sep=c(1,3,7), remove=FALSE)
+
+#add something between 2 characters in a column
+#add _ in between character 17 and 18
+stri_sub(df$column, 18, 17) <- "_"
+
+#remove characters from a column
+#remove the first character in a column
+df$column<-substring(df$column,2)
+
+#uppercase to lowercase
+df<-mutate_all(df,.funs=tolower)
+df$column<-tolower(df$column)
+```
+
+```{r math}
+name<-df%>%
+  summarize(column=n())%>% #count the number of observations
+  mutate(new_column1=column1+column2, #quick maths
+         new_column2=column3/new_column1)
+
+#add x to numeric values
+name<-df[row_number,column_number]+x
+
+#compute values in a column by specific conditions
+#if column 1 = 0, minus 1 from column 2, otherwise column 2
+#remains the same
+df$new_column=ifelse(df$column1 %in% "0",
+                     df$column2-1,
+                     df$column2*1)
+
+#take absolute value
+name<-df%>%
+  mutate(new_column=abs(column1))
+```
+
+```{r date/time stuff}
+#good for data with different date format
+df$new_column<-parse_date_time(df$column,  
+                               orders = c('ymd','dmy'),tz="")
+#extract date/time info from date/time column
+name<-df%>%
+  mutate(yr=year(date_time),
+         mnth=month(date_time),
+         d=day(date_time),
+         jday=yday(date_time),
+         hr=hour(date_time),
+         min=minute(date_time),
+         sec=second(date_time))
+#create combined date/time column
+name<-df%>%
+  mutate(new_column=ymd_hms(paste(column1,column2,...),tz=""))
+name<-df%>%
+  mutate(new_column=ymd(paste(column1,column2,...),tz=""))
+#add time to a date/time column
+#add 600 seconds to a column
+name<-df%>%
+  mutate(new_column=column+600)
+#finds the time difference between 2 date/time columns
+#column1-column2
+name<-df%>%
+  mutate(new_column=as.numeric(difftime(column1,column2,
+                                        units=c("mins"))))
+```
+
+```{r new column}
+#add new column with specified value
+df$new_column<-""
+name<-df%>%
+  mutate(new_column="")
+```
