@@ -44,3 +44,21 @@ elk.mod<-glm(kill~elevation, data=elk, family=binomial)
 summary(elk.mod)
 mule.mod<-glm(kill~elevation, data=mule, family=binomial)
 summary(mule.mod)
+
+#plot elk model
+elk.plot <- data.frame(elevation=seq(min(elk$elevation), max(elk$elevation),
+                             len=500))
+elk.plot$pre = predict(elk.mod, elk.plot, type="response")
+ggplot(elk.plot, aes(x=elevation, y=pre)) + 
+  geom_line()+
+  ylab("Predicted probability \n of elk kill")+
+  xlab("Elevation (m)")
+
+#plot mule deer model
+mule.plot <- data.frame(elevation=seq(min(mule$elevation), max(mule$elevation),
+                                     len=500))
+mule.plot$pre = predict(mule.mod, mule.plot, type="response")
+ggplot(mule.plot, aes(x=elevation, y=pre)) + 
+  geom_line()+
+  ylab("Predicted probability \n of mule deer kill")+
+  xlab("Elevation (m)")
