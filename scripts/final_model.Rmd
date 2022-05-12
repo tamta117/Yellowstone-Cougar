@@ -68,3 +68,15 @@ m.elk<-glm(kill~elevation+canopy_cover+slope,data=elk,
           family=binomial)
 summary(m.elk)
 ```
+
+```{aic table}
+library(AICcmodavg)
+
+#the models you're comparing
+model.set <- list(mod1, mod2, mod3, etc)
+model.names <- c("mod1", "mod2", "mod3", "etc.")
+
+#makes the table
+aic = aictab(model.set, modnames = model.names)
+aic
+```
