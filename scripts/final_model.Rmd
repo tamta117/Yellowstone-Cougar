@@ -19,26 +19,33 @@ library(dplyr)
 library(raster) #for scaling
 library(AICcmodavg) #for AIC
 library(ggplot2)
+library(readxl)
 ```
 
 ```{r load data, include=FALSE}
-kill<-read.csv(here("data/.csv"))%>%
-  mutate(kill=1)
-random<-read.csv(here("data/.csv"))%>%
-  mutate(kill=0)
+kill<-read_excel(here("data/killdata.xlsx"))%>%
+  distinct(kill_num,.keep_all = TRUE)%>%
+  mutate(kill=1,
+         canopy_cover=`Canopy cover`)%>%
+  dplyr::select(kill,species,year,jday,long,lat,elevation,slope,
+                canopy_cover)
+random<-read_excel(here("data/randomdata.xlsx"))%>%
+  mutate(kill=0,
+         slope=Slope,
+         canopy_cover=`Canopy cover`)%>%
+  dplyr::select(kill,long,lat,elevation,slope,canopy_cover)
 ```
 
 #### Prepare datasets for model
 
 ```{r join kills and random points}
-premod<-bind_rows(random,kill)%>%
-  select(kill,species,elevation,canopy_cover,slope)
+premod<-bind_rows(random,kill)
 ```
 
 Scale any numerical columns, except lat/long and use/nonuse. This would involve elevation, slope, and canopy cover. Scaling would help standardize the numerical covariates --> allows us to compare coefficients to each other.
 
 ```{r scale}
-premod.scale <- scale(premod[3:5])
+premod.scale <- scale(premod[4:6])
 
 #add back any columns that we did not scale
 mod <- data.frame("kill" = premod$kill, "species" = premod$species,
@@ -46,9 +53,9 @@ mod <- data.frame("kill" = premod$kill, "species" = premod$species,
 ```
 
 ```{r filter data, include=FALSE}
-elk<-mod%>%
+elk.mod<-mod%>%
   filter(species=="elk" | kill == 0)
-mule<-mod%>%
+mule.mod<-mod%>%
   filter(species=="mule deer" | kill == 0)
 ```
 
@@ -56,20 +63,20 @@ mule<-mod%>%
 
 Null model to compare to logistic regressions. If AIC of logistics are above or <2 below null model, then the relationships are not significant. 
 ```{r null model}
-m.null <- glm(kill ~ 1, family = binomial, data=mod)
-summary(m.null)
+null <- glm(kill ~ 1, family = binomial, data=mod)
+summary(null)
 ```
 
 ```{r elk model}
-m.elk<-glm(kill~elevation+canopy_cover+slope, data=elk,
+elk<-glm(kill~elevation+canopy_cover+slope, data=elk.mod,
           family=binomial)
-summary(m.elk)
+summary(elk)
 ```
 
 ```{r mule deer model}
-m.mule<-glm(kill~elevation+canopy_cover+slope, data=mule,
+mule<-glm(kill~elevation+canopy_cover+slope, data=mule.mod,
           family=binomial)
-summary(m.elk)
+summary(mule)
 ```
 
 Lower AIC = better. Choose model with the lowest AIC. Make sure it is >2 below the null.
