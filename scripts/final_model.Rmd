@@ -17,6 +17,8 @@ library(here)
 library(tidyverse)
 library(dplyr)
 library(raster) #for scaling
+library(AICcmodavg) #for AIC
+library(ggplot2)
 ```
 
 ```{r load data, include=FALSE}
@@ -45,9 +47,9 @@ mod <- data.frame("kill" = premod$kill, "species" = premod$species,
 
 ```{r filter data, include=FALSE}
 elk<-mod%>%
-  filter(species=="elk" | kill = 0)
+  filter(species=="elk" | kill == 0)
 mule<-mod%>%
-  filter(species=="mule deer" | kill = 0)
+  filter(species=="mule deer" | kill == 0)
 ```
 
 #### Models & AIC
@@ -73,8 +75,6 @@ summary(m.elk)
 Lower AIC = better. Choose model with the lowest AIC. Make sure it is >2 below the null.
 
 ```{r aic table}
-library(AICcmodavg)
-
 #the models you're comparing
 model.set <- list(m.null, m.elk, m.mule)
 model.names <- c("null", "elk", "mule deer")
@@ -82,4 +82,32 @@ model.names <- c("null", "elk", "mule deer")
 #makes the table
 aic = aictab(model.set, modnames = model.names)
 aic
+```
+
+#### Graphs
+
+```{r prediction plots}
+#prediction for mule deer
+mule.plot <- data.frame(elevation=seq(min(m.mule$elevation), 
+                                  max(m.mule$elevation),len=500))
+mule.plot$prop = predict(m.mule, mule.plot, type="response")
+
+#prediction for elk
+elk.plot <- data.frame(elevation=seq(min(m.elk$elevation), 
+                                  max(m.elk$elevation),len=500))
+elk.plot$prop = predict(m.elk, elk.plot, type="response")
+
+#bind data tables
+mule.plot$species<-"Elk"
+elk.plot$species<-"Mule deer"
+bind.plot<-rbind(mule.plot,elk.plot)
+
+#plot
+ggplot(bind.plot, aes(x=elevation, y=prop, col=species)) +
+  geom_smooth(size=1.5)+
+  xlab("Elevation (m)")+
+  ylab("Predicted probability of kill")+
+  scale_color_manual(values = c("#39638b","#26a185"), 
+                     name = "Species",
+                     labels=c("Mule deer", "Elk"))
 ```
