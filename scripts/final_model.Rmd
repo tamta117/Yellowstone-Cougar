@@ -20,6 +20,8 @@ library(raster) #for scaling
 library(AICcmodavg) #for AIC
 library(ggplot2)
 library(readxl)
+library(car)
+library(MuMIn)
 ```
 
 ```{r load data, include=FALSE}
@@ -69,14 +71,18 @@ summary(null)
 
 ```{r elk model}
 elk<-glm(kill~elevation+canopy_cover+slope, data=elk.mod,
-          family=binomial)
+          family=binomial,na.action = "na.fail")
 summary(elk)
+vif(elk)
+dredge(elk)
 ```
 
 ```{r mule deer model}
 mule<-glm(kill~elevation+canopy_cover+slope, data=mule.mod,
-          family=binomial)
+          family=binomial,na.action = "na.fail")
 summary(mule)
+vif(mule)
+dredge(mule)
 ```
 
 Lower AIC = better. Choose model with the lowest AIC. Make sure it is >2 below the null.
