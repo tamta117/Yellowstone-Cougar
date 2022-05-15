@@ -5,7 +5,6 @@ date: "5/3/2022"
 output: html_document
 ---
 #### To do list
--wait for data
 -work on brochures and presentations
 -figure out how to make the graphs
 -run the models
@@ -20,8 +19,9 @@ library(raster) #for scaling
 library(AICcmodavg) #for AIC
 library(ggplot2)
 library(readxl)
-library(car)
-library(MuMIn)
+library(car) #for vif
+library(MuMIn) #for dredge
+library(tibble) #for add_column
 ```
 
 ```{r load data, include=FALSE}
@@ -72,6 +72,12 @@ summary(null)
 ```{r elk model}
 elk<-glm(kill~elevation+canopy_cover+slope, data=elk.mod,
           family=binomial,na.action = "na.fail")
+elk.elev<-glm(kill~elevation,data=elk.mod,
+          family=binomial,na.action = "na.fail")
+elk.slope<-glm(kill~slope,data=elk.mod,
+          family=binomial,na.action = "na.fail")
+elk.cano<-glm(kill~canopy_cover,data=elk.mod,
+          family=binomial,na.action = "na.fail")
 summary(elk)
 vif(elk)
 dredge(elk)
@@ -79,6 +85,12 @@ dredge(elk)
 
 ```{r mule deer model}
 mule<-glm(kill~elevation+canopy_cover+slope, data=mule.mod,
+          family=binomial,na.action = "na.fail")
+mule.elev<-glm(kill~elevation, data=mule.mod,
+          family=binomial,na.action = "na.fail")
+mule.slope<-glm(kill~slope, data=mule.mod,
+          family=binomial,na.action = "na.fail")
+mule.cano<-glm(kill~canopy_cover, data=mule.mod,
           family=binomial,na.action = "na.fail")
 summary(mule)
 vif(mule)
@@ -99,28 +111,152 @@ aic
 
 #### Graphs
 
-```{r prediction plots}
-#prediction for mule deer
-mule.plot <- data.frame(elevation=seq(min(m.mule$elevation), 
-                                  max(m.mule$elevation),len=500))
-mule.plot$prop = predict(m.mule, mule.plot, type="response")
+```{r prediction tables}
+#elevation
+mule.plot <- with(mule.mod,
+  data.frame(elevation=seq(min(mule.mod$elevation), 
+                           max(mule.mod$elevation),len=500)))
+mule.plot <- add_column(mule.plot, 
+                        fit = predict(mule.elev, newdata=mule.plot,
+                                      type = 'response'))
+elk.plot <- with(elk.mod,
+  data.frame(elevation=seq(min(elk.mod$elevation), 
+                           max(elk.mod$elevation),len=500)))
+elk.plot <- add_column(elk.plot, 
+                        fit = predict(elk.elev, newdata = elk.plot,
+                                      type = 'response'))
+#slope
+mule.plot1 <- with(mule.mod,
+  data.frame(slope=seq(min(mule.mod$slope), 
+                           max(mule.mod$slope),len=500)))
+mule.plot1 <- add_column(mule.plot1, 
+                        fit=predict(mule.slope, newdata=mule.plot1,
+                                      type = 'response'))
+elk.plot1 <- with(elk.mod,
+  data.frame(slope=seq(min(elk.mod$slope), 
+                           max(elk.mod$slope),len=500)))
+elk.plot1 <- add_column(elk.plot1, 
+                        fit = predict(elk.slope, newdata=elk.plot1,
+                                      type = 'response'))
+#canopy cover
+mule.plot2 <- with(mule.mod,
+  data.frame(canopy_cover=seq(min(mule.mod$canopy_cover), 
+                           max(mule.mod$canopy_cover),len=500)))
+mule.plot2 <- add_column(mule.plot2, 
+                        fit=predict(mule.cano, newdata=mule.plot2,
+                                      type = 'response'))
+elk.plot2 <- with(elk.mod,
+  data.frame(canopy_cover=seq(min(elk.mod$canopy_cover), 
+                           max(elk.mod$canopy_cover),len=500)))
+elk.plot2 <- add_column(elk.plot2, 
+                        fit = predict(elk.cano, newdata=elk.plot2,
+                                      type = 'response'))
+```
 
-#prediction for elk
-elk.plot <- data.frame(elevation=seq(min(m.elk$elevation), 
-                                  max(m.elk$elevation),len=500))
-elk.plot$prop = predict(m.elk, elk.plot, type="response")
+```{r confidence interval}
+#elk elevation
+ilink <- family(elk.elev)$linkinv
+elk.con <- bind_cols(elk.plot, setNames(as_tibble(predict(elk.elev, elk.plot, se.fit = TRUE)[1:2]),c('fit_link','se_link')))
+elk.con <- mutate(elk.con,
+                fit_resp  = ilink(fit_link),
+                right_upr = ilink(fit_link + (2 * se_link)),
+                right_lwr = ilink(fit_link - (2 * se_link)),
+                species="Elk")
+#elk slope
+ilink <- family(elk.slope)$linkinv
+elk.con1 <- bind_cols(elk.plot1, setNames(as_tibble(
+  predict(elk.slope, elk.plot1, se.fit = TRUE)[1:2]),
+  c('fit_link','se_link')))
+elk.con1 <- mutate(elk.con1,
+                fit_resp  = ilink(fit_link),
+                right_upr = ilink(fit_link + (2 * se_link)),
+                right_lwr = ilink(fit_link - (2 * se_link)),
+                species="Elk")
+#elk canopy cover
+ilink <- family(elk.cano)$linkinv
+elk.con2 <- bind_cols(elk.plot2, setNames(as_tibble(
+  predict(elk.cano, elk.plot2, se.fit = TRUE)[1:2]),
+  c('fit_link','se_link')))
+elk.con2 <- mutate(elk.con2,
+                fit_resp  = ilink(fit_link),
+                right_upr = ilink(fit_link + (2 * se_link)),
+                right_lwr = ilink(fit_link - (2 * se_link)),
+                species="Elk")
+#mule deer elevation
+ilink <- family(mule.elev)$linkinv
+mule.con <- bind_cols(mule.plot,setNames(as_tibble(predict(
+  mule.elev, mule.plot,se.fit = TRUE)[1:2]), 
+  c('fit_link','se_link')))
+mule.con <- mutate(mule.con,
+                fit_resp  = ilink(fit_link),
+                right_upr = ilink(fit_link + (2 * se_link)),
+                right_lwr = ilink(fit_link - (2 * se_link)),
+                species="Mule deer")
+#mule deer slope
+ilink <- family(mule.slope)$linkinv
+mule.con1 <- bind_cols(mule.plot1, setNames(as_tibble(
+  predict(mule.slope, mule.plot1, se.fit = TRUE)[1:2]),
+  c('fit_link','se_link')))
+mule.con1 <- mutate(mule.con1,
+                fit_resp  = ilink(fit_link),
+                right_upr = ilink(fit_link + (2 * se_link)),
+                right_lwr = ilink(fit_link - (2 * se_link)),
+                species="Mule deer")
+#mule deer canopy cover
+ilink <- family(mule.cano)$linkinv
+mule.con2 <- bind_cols(mule.plot2, setNames(as_tibble(
+  predict(mule.cano, mule.plot2, se.fit = TRUE)[1:2]),
+  c('fit_link','se_link')))
+mule.con2 <- mutate(mule.con2,
+                fit_resp  = ilink(fit_link),
+                right_upr = ilink(fit_link + (2 * se_link)),
+                right_lwr = ilink(fit_link - (2 * se_link)),
+                species="Mule deer")
+```
 
-#bind data tables
-mule.plot$species<-"Elk"
-elk.plot$species<-"Mule deer"
-bind.plot<-rbind(mule.plot,elk.plot)
+```{r bind tables}
+elev.plot<-rbind(mule.con,elk.con)
+slope.plot<-rbind(mule.con1,elk.con1)
+cano.plot<-rbind(mule.con2,elk.con2)
+```
 
-#plot
-ggplot(bind.plot, aes(x=elevation, y=prop, col=species)) +
-  geom_smooth(size=1.5)+
-  xlab("Elevation (m)")+
-  ylab("Predicted probability of kill")+
-  scale_color_manual(values = c("#39638b","#26a185"), 
-                     name = "Species",
-                     labels=c("Mule deer", "Elk"))
+```{r graph prediction tables}
+#elevation
+ggplot(elev.plot)+
+  geom_ribbon(aes(x=elevation, ymin = right_lwr,ymax = right_upr,
+                  fill=species),alpha = 0.2)+
+  scale_fill_manual(values = c("#39638b","#26a185"))+
+  geom_smooth(aes(x=elevation, y=fit, col=species))+
+  scale_color_manual(values = c("#39638b","#26a185"))
+
+#slope
+ggplot(slope.plot)+
+  geom_ribbon(aes(x=slope, ymin = right_lwr,ymax = right_upr,
+                  fill=species),alpha = 0.2)+
+  scale_fill_manual(values = c("#39638b","#26a185"))+
+  geom_smooth(aes(x=slope, y=fit, col=species))+
+  scale_color_manual(values = c("#39638b","#26a185"))
+
+#canopy cover
+ggplot(cano.plot)+
+  geom_ribbon(aes(x=canopy_cover, ymin=right_lwr, ymax=right_upr,
+                  fill=species),alpha = 0.2)+
+  scale_fill_manual(values = c("#39638b","#26a185"))+
+  geom_smooth(aes(x=canopy_cover, y=fit, col=species))+
+  scale_color_manual(values = c("#39638b","#26a185"))
+```
+
+```{r graph effect size}
+apatheme=theme_minimal()+
+  theme(panel.border=element_blank(),
+        axis.line=element_line(),
+        legend.title=element_blank(), 
+        axis.text=element_text(size=10),
+        axis.title=element_text(size=10))
+plot_summs(elk,mule,model.names = c("Elk","Mule deer"),
+           coefs=c("Elevation"="elevation",
+                   "Canopy cover"="canopy_cover",
+                   "Slope"="slope"))+
+  apatheme+
+  labs(x="Effect size",y=NULL)
 ```
