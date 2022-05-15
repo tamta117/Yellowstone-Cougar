@@ -225,25 +225,37 @@ cano.plot<-rbind(mule.con2,elk.con2)
 ggplot(elev.plot)+
   geom_ribbon(aes(x=elevation, ymin = right_lwr,ymax = right_upr,
                   fill=species),alpha = 0.2)+
-  scale_fill_manual(values = c("#39638b","#26a185"))+
+  scale_fill_manual(values = c("#39638b","#26a185"),
+                    labels=c("Elk","Mule deer"), name="Species")+
   geom_smooth(aes(x=elevation, y=fit, col=species))+
-  scale_color_manual(values = c("#39638b","#26a185"))
+  scale_color_manual(values = c("#39638b","#26a185"),
+                     labels=c("Elk","Mule deer"), name="Species")+
+  labs(x="Elevation (m)", y="Probability of kill")
+ggsave(here("figures/elevation.conf.png"),dpi=300)
 
 #slope
 ggplot(slope.plot)+
   geom_ribbon(aes(x=slope, ymin = right_lwr,ymax = right_upr,
                   fill=species),alpha = 0.2)+
-  scale_fill_manual(values = c("#39638b","#26a185"))+
+  scale_fill_manual(values = c("#39638b","#26a185"),
+                    labels=c("Elk","Mule deer"), name="Species")+
   geom_smooth(aes(x=slope, y=fit, col=species))+
-  scale_color_manual(values = c("#39638b","#26a185"))
+  scale_color_manual(values = c("#39638b","#26a185"),
+                     labels=c("Elk","Mule deer"), name="Species")+
+  labs(x="Slope", y="Probability of kill")
+ggsave(here("figures/slope.conf.png"),dpi=300)
 
 #canopy cover
 ggplot(cano.plot)+
   geom_ribbon(aes(x=canopy_cover, ymin=right_lwr, ymax=right_upr,
                   fill=species),alpha = 0.2)+
-  scale_fill_manual(values = c("#39638b","#26a185"))+
+  scale_fill_manual(values = c("#39638b","#26a185"),
+                    labels=c("Elk","Mule deer"), name="Species")+
   geom_smooth(aes(x=canopy_cover, y=fit, col=species))+
-  scale_color_manual(values = c("#39638b","#26a185"))
+  scale_color_manual(values = c("#39638b","#26a185"),
+                     labels=c("Elk","Mule deer"), name="Species")+
+  labs(x="Canopy cover (%)", y="Probability of kill")
+ggsave(here("figures/canopy.conf.png"),dpi=300)
 ```
 
 ```{r graph effect size}
@@ -259,4 +271,5 @@ plot_summs(elk,mule,model.names = c("Elk","Mule deer"),
                    "Slope"="slope"))+
   apatheme+
   labs(x="Effect size",y=NULL)
+ggsave(here("figures/effect.size.png"),dpi=300)
 ```
