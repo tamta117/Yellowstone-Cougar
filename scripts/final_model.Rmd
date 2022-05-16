@@ -9,6 +9,10 @@ output: html_document
 -figure out how to make the graphs
 -run the models
 
+#### Ideas
+-plot models over data - x=use/nonuse (1/0), y=elevation, plot prediction line on top
+-boxplots/bar graph to compare mule deer vs elk elevation, slope, canopy cover
+
 
 #### Setup
 ```{r load library, include=FALSE}
@@ -22,6 +26,7 @@ library(readxl)
 library(car) #for vif
 library(MuMIn) #for dredge
 library(tibble) #for add_column
+library(jtools)
 ```
 
 ```{r load data, include=FALSE}
@@ -81,6 +86,7 @@ elk.cano<-glm(kill~canopy_cover,data=elk.mod,
 summary(elk)
 vif(elk)
 dredge(elk)
+confint(elk)
 ```
 
 ```{r mule deer model}
@@ -95,6 +101,7 @@ mule.cano<-glm(kill~canopy_cover, data=mule.mod,
 summary(mule)
 vif(mule)
 dredge(mule)
+confint(mule)
 ```
 
 Lower AIC = better. Choose model with the lowest AIC. Make sure it is >2 below the null.
@@ -264,7 +271,8 @@ apatheme=theme_minimal()+
         axis.line=element_line(),
         legend.title=element_blank(), 
         axis.text=element_text(size=10),
-        axis.title=element_text(size=10))
+        axis.title=element_text(size=10),
+        panel.background = element_rect(fill="white"))
 plot_summs(elk,mule,model.names = c("Elk","Mule deer"),
            coefs=c("Elevation"="elevation",
                    "Canopy cover"="canopy_cover",
