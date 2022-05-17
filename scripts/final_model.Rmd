@@ -284,14 +284,21 @@ apatheme=theme_minimal()+
         legend.title=element_blank(), 
         axis.text=element_text(size=10),
         axis.title=element_text(size=10),
-        panel.background = element_rect(fill="white"))
+        panel.background = element_rect(fill="grey70"))
 plot_summs(elk,mule,model.names = c("Elk","Mule deer"),
-           coefs=c("Elevation"="elevation",
-                   "Canopy cover"="canopy_cover",
-                   "Slope"="slope"))+
-  apatheme+
-  labs(x="Effect size",y=NULL)
-ggsave(here("figures/effect.size.png"),dpi=300)
+           colors=c("#436658","#b4673b"),
+           coefs=c("Canopy cover"="canopy_cover",
+                   "Slope"="slope",
+                   "Elevation"="elevation"))+
+  theme_grey()+
+  theme(legend.title=element_blank(),
+        legend.key = element_rect(fill="white"),
+        legend.position="top",
+        legend.box.spacing = unit(0,"in"))+
+  #guides(color=guide_legend(override.aes=list(fill=NA)))+
+  labs(x="Effect size",y=NULL)+
+  coord_flip()
+ggsave(here("figures/effect.size.png"),width=3.5,height=3,units="in",dpi=300)
 ```
 
 ```{r FINAL prediction plots}
