@@ -64,6 +64,8 @@ elk.mod<-mod%>%
   filter(species=="elk" | kill == 0)
 mule.mod<-mod%>%
   filter(species=="mule deer" | kill == 0)
+check<-elk.mod%>%
+  filter(kill==0)
 ```
 
 #### Models & AIC
@@ -77,13 +79,15 @@ summary(null)
 ```{r elk model}
 elk<-glm(kill~elevation+canopy_cover+slope, data=elk.mod,
           family=binomial,na.action = "na.fail")
+elk1<-glm(kill~elevation+canopy_cover+slope + I(slope^2), data=elk.mod,
+          family=binomial,na.action = "na.fail")
 elk.elev<-glm(kill~elevation,data=elk.mod,
           family=binomial,na.action = "na.fail")
 elk.slope<-glm(kill~slope,data=elk.mod,
           family=binomial,na.action = "na.fail")
 elk.cano<-glm(kill~canopy_cover,data=elk.mod,
           family=binomial,na.action = "na.fail")
-summary(elk)
+summary(elk1)
 vif(elk)
 dredge(elk)
 confint(elk)
@@ -92,13 +96,15 @@ confint(elk)
 ```{r mule deer model}
 mule<-glm(kill~elevation+canopy_cover+slope, data=mule.mod,
           family=binomial,na.action = "na.fail")
+mule1<-glm(kill~elevation+canopy_cover+slope+I(slope^2), data=mule.mod,
+          family=binomial,na.action = "na.fail")
 mule.elev<-glm(kill~elevation, data=mule.mod,
           family=binomial,na.action = "na.fail")
 mule.slope<-glm(kill~slope, data=mule.mod,
           family=binomial,na.action = "na.fail")
 mule.cano<-glm(kill~canopy_cover, data=mule.mod,
           family=binomial,na.action = "na.fail")
-summary(mule)
+summary(mule1)
 vif(mule)
 dredge(mule)
 confint(mule)
@@ -237,7 +243,9 @@ ggplot(elev.plot)+
   geom_smooth(aes(x=elevation, y=fit, col=species))+
   scale_color_manual(values = c("#39638b","#26a185"),
                      labels=c("Elk","Mule deer"), name="Species")+
-  labs(x="Elevation (m)", y="Probability of kill")
+  labs(x="Elevation (m)", y="Probability of kill")+
+  theme(legend.key=element_rect(fill="white"))+
+  guides(color=guide_legend(override.aes=list(fill=NA)))
 ggsave(here("figures/elevation.conf.png"),dpi=300)
 
 #slope
@@ -249,19 +257,23 @@ ggplot(slope.plot)+
   geom_smooth(aes(x=slope, y=fit, col=species))+
   scale_color_manual(values = c("#39638b","#26a185"),
                      labels=c("Elk","Mule deer"), name="Species")+
-  labs(x="Slope", y="Probability of kill")
+  labs(x="Slope", y="Probability of kill")+
+  theme(legend.key=element_rect(fill="white"))+
+  guides(color=guide_legend(override.aes=list(fill=NA)))
 ggsave(here("figures/slope.conf.png"),dpi=300)
 
 #canopy cover
 ggplot(cano.plot)+
   geom_ribbon(aes(x=canopy_cover, ymin=right_lwr, ymax=right_upr,
                   fill=species),alpha = 0.2)+
-  scale_fill_manual(values = c("#39638b","#26a185"),
+  scale_fill_manual(values = c("#436658","#b4673b"),
                     labels=c("Elk","Mule deer"), name="Species")+
   geom_smooth(aes(x=canopy_cover, y=fit, col=species))+
-  scale_color_manual(values = c("#39638b","#26a185"),
+  scale_color_manual(values = c("#436658","#b4673b"),
                      labels=c("Elk","Mule deer"), name="Species")+
-  labs(x="Canopy cover (%)", y="Probability of kill")
+  labs(x="Canopy cover (%)", y="Probability of kill")+
+  theme(legend.key=element_rect(fill="white"))+
+  guides(color=guide_legend(override.aes=list(fill=NA)))
 ggsave(here("figures/canopy.conf.png"),dpi=300)
 ```
 
@@ -280,4 +292,128 @@ plot_summs(elk,mule,model.names = c("Elk","Mule deer"),
   apatheme+
   labs(x="Effect size",y=NULL)
 ggsave(here("figures/effect.size.png"),dpi=300)
+```
+
+```{r FINAL prediction plots}
+library(ggeffects)
+elev<-ggpredict(elk1, terms="elevation [all]")
+elev$species<-"Elk"
+elev1<-ggpredict(mule1, terms="elevation [all]")
+elev1$species<-"Mule deer"
+elev.bind<-bind_rows(elev,elev1)
+ggplot(elev.bind, aes(x, predicted)) + 
+  geom_ribbon(data=elev,aes(ymin=conf.low, ymax=conf.high), alpha=0.15,fill="#436658")+
+  geom_ribbon(data=elev1,aes(ymin=conf.low, ymax=conf.high), alpha=0.15,fill="#b4673b")+
+  geom_smooth(aes(col=species))+
+  scale_color_manual(values = c("#436658","#b4673b"), 
+                     name = "",labels=c("Elk","Mule deer"))+
+  labs(x="Elevation", y="Probability of kill")+
+  theme(legend.key = element_rect(fill="white"),
+        legend.position="top",
+        legend.box.spacing = unit(0,"in"))+
+  guides(color=guide_legend(override.aes=list(fill=NA)))
+ggsave(here("figures/elevation.bind1.png"),width=4,height=3,units="in",dpi=300)
+
+canopy<-ggpredict(elk1, terms="canopy_cover [all]")
+canopy$species<-"Elk"
+canopy1<-ggpredict(mule1, terms="canopy_cover [all]")
+canopy1$species<-"Mule deer"
+canopy.bind<-bind_rows(canopy,canopy1)
+ggplot(canopy.bind, aes(x, predicted)) + 
+  geom_ribbon(data=canopy,aes(ymin=conf.low, ymax=conf.high), alpha=0.15,fill="#436658")+
+  geom_ribbon(data=canopy1,aes(ymin=conf.low, ymax=conf.high), alpha=0.15,fill="#b4673b")+
+  geom_smooth(aes(col=species))+
+  scale_color_manual(values = c("#436658","#b4673b"), 
+                     name = "",labels=c("Elk","Mule deer"))+
+  labs(x="Canopy cover", y="Probability of kill")+
+  theme(legend.key = element_rect(fill="white"),
+        legend.position="top",
+        legend.box.spacing = unit(0,"in"))+
+  guides(color=guide_legend(override.aes=list(fill=NA)))
+ggsave(here("figures/canopy.bind1.png"),width=4,height=3,units="in",dpi=300)
+
+slope<-ggpredict(elk1, terms="slope [all]")
+slope$species<-"Elk"
+slope1<-ggpredict(mule1, terms="slope [all]")
+slope1$species<-"Mule deer"
+slope.bind<-bind_rows(slope,slope1)
+ggplot(slope.bind, aes(x, predicted)) + 
+  geom_ribbon(data=slope,aes(ymin=conf.low, ymax=conf.high), alpha=0.15,fill="#436658")+
+  geom_ribbon(data=slope1,aes(ymin=conf.low, ymax=conf.high), alpha=0.15,fill="#b4673b")+
+  geom_line(aes(col=species),size=1)+
+  scale_color_manual(values = c("#436658","#b4673b"), 
+                     name = "",labels=c("Elk","Mule deer"))+
+  labs(x="Slope", y="Probability of kill")+
+  theme(legend.key = element_rect(fill="white"),
+        legend.position="top",
+        legend.box.spacing = unit(0,"in"))+
+  guides(color=guide_legend(override.aes=list(fill=NA)))
+ggsave(here("figures/slope.bind1.png"),width=4,height=3,units="in",dpi=300)
+```
+
+```{r raw data plots}
+dat.plot<-data.frame(elev.bin=seq(1500,2800,100))%>%
+  mutate(row=as.numeric(row.names(.)))
+preplot<-premod
+preplot$row<-findInterval(premod$elevation,dat.plot$elev.bin)
+preplot<-left_join(preplot,dat.plot,by="row")%>%
+  dplyr::select(-row)
+
+dat.plot1<-data.frame(slope.bin=seq(0,55,5))%>%
+  mutate(row=as.numeric(row.names(.)))
+preplot$row<-findInterval(preplot$slope,dat.plot1$slope.bin)
+preplot<-left_join(preplot,dat.plot1,by="row")%>%
+  dplyr::select(-row)
+
+dat.plot2<-data.frame(canopy.bin=seq(0,70,5))%>%
+  mutate(row=as.numeric(row.names(.)))
+preplot$row<-findInterval(preplot$canopy_cover,dat.plot2$canopy.bin)
+preplot<-left_join(preplot,dat.plot2,by="row")%>%
+  dplyr::select(-row)
+
+elevplot<-preplot%>%
+  filter(kill==1)%>%
+  group_by(elev.bin, species)%>%
+  summarize(nobs=n())
+slopeplot<-preplot%>%
+  filter(kill==1)%>%
+  group_by(slope.bin, species)%>%
+  summarize(nobs=n())
+canopyplot<-preplot%>%
+  filter(kill==1)%>%
+  group_by(canopy.bin, species)%>%
+  summarize(nobs=n())
+
+ggplot(elevplot)+
+  geom_bar(aes(x=as.factor(elev.bin),y=nobs,fill = species),  
+           stat = "identity", position = "dodge")+
+  scale_fill_manual(values = c("#436658","#b4673b"), 
+                     name = "",labels=c("Elk","Mule deer"))+
+  labs(x="Elevation (m)", y="Number of kills")+
+  theme(legend.position="top",
+        legend.box.spacing = unit(0,"in"))
+ggsave(here("figures/bar.elevation.png"), width=4, height=3, 
+            units="in", dpi=300)
+
+ggplot(slopeplot)+
+  geom_bar(aes(x=as.factor(slope.bin),y=nobs,fill = species),  
+           stat = "identity", position = "dodge")+
+  scale_fill_manual(values = c("#436658","#b4673b"), 
+                     name = "",labels=c("Elk","Mule deer"))+
+  labs(x="Slope", y="Number of kills")+
+  theme(legend.position="top",
+        legend.box.spacing = unit(0,"in"))
+ggsave(here("figures/bar.slope.png"), width=4, height=3, 
+            units="in", dpi=300)
+
+ggplot(canopyplot)+
+  geom_bar(aes(x=as.factor(canopy.bin),y=nobs,fill = species),  
+           stat = "identity", position = "dodge")+
+  scale_fill_manual(values = c("#436658","#b4673b"), 
+                     name = "",labels=c("Elk","Mule deer"))+
+  labs(x="Canopy cover (%)", y="Number of kills")+
+  theme(legend.position="top",
+        legend.box.spacing = unit(0,"in"))
+ggsave(here("figures/bar.canopy.png"), width=4, height=3, 
+            units="in", dpi=300)
 ```
