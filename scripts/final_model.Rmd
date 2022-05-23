@@ -278,49 +278,62 @@ ggsave(here("figures/canopy.conf.png"),dpi=300)
 ```
 
 ```{r graph effect size}
-apatheme=theme_minimal()+
-  theme(panel.border=element_blank(),
-        axis.line=element_line(),
-        legend.title=element_blank(), 
-        axis.text=element_text(size=10),
-        axis.title=element_text(size=10),
-        panel.background = element_rect(fill="grey70"))
+library(jtools)
 plot_summs(elk,mule,model.names = c("Elk","Mule deer"),
            colors=c("#436658","#b4673b"),
            coefs=c("Canopy cover"="canopy_cover",
                    "Slope"="slope",
                    "Elevation"="elevation"))+
   theme_grey()+
-  theme(legend.title=element_blank(),
-        legend.key = element_rect(fill="white"),
-        legend.position="top",
-        legend.box.spacing = unit(0,"in"))+
-  #guides(color=guide_legend(override.aes=list(fill=NA)))+
+  mytheme+
   labs(x="Effect size",y=NULL)+
   coord_flip()
-ggsave(here("figures/effect.size.png"),width=3.5,height=3,units="in",dpi=300)
+ggsave(here("figures/effect.size.png"),width=5,height=3.5,units="in",dpi=300)
 ```
 
 ```{r FINAL prediction plots}
 library(ggeffects)
+mytheme<-theme(legend.key = element_rect(fill="white"),
+        legend.position="top",
+        legend.box.spacing = unit(0,"in"),
+        panel.border=element_blank(),
+        axis.line=element_line(),
+        legend.title=element_blank(), 
+        axis.text=element_text(size=10),
+        axis.title=element_text(size=15),
+        panel.background = element_rect(fill="white"),
+        legend.text = element_text(size=15))
+min.x <- round(min(premod$elevation),dig=-1)
+max.x <- round(max(premod$elevation),dig=-1)
+int.length <- (max.x-min.x)/5
+x.axis.real <- seq(from=min.x,to=max.x,by=int.length)
+x.axis <- (x.axis.real - mean(premod$elevation))/sd(premod$elevation) 
+
 elev<-ggpredict(elk1, terms="elevation [all]")
 elev$species<-"Elk"
 elev1<-ggpredict(mule1, terms="elevation [all]")
 elev1$species<-"Mule deer"
 elev.bind<-bind_rows(elev,elev1)
 ggplot(elev.bind, aes(x, predicted)) + 
-  geom_ribbon(data=elev,aes(ymin=conf.low, ymax=conf.high), alpha=0.15,fill="#436658")+
-  geom_ribbon(data=elev1,aes(ymin=conf.low, ymax=conf.high), alpha=0.15,fill="#b4673b")+
+  geom_ribbon(data=elev,aes(ymin=conf.low, ymax=conf.high), 
+              alpha=0.15,fill="#436658")+
+  geom_ribbon(data=elev1,aes(ymin=conf.low, ymax=conf.high), 
+              alpha=0.15,fill="#b4673b")+
   geom_smooth(aes(col=species))+
   scale_color_manual(values = c("#436658","#b4673b"), 
                      name = "",labels=c("Elk","Mule deer"))+
-  labs(x="Elevation", y="Probability of kill")+
-  theme(legend.key = element_rect(fill="white"),
-        legend.position="top",
-        legend.box.spacing = unit(0,"in"))+
-  guides(color=guide_legend(override.aes=list(fill=NA)))
-ggsave(here("figures/elevation.bind1.png"),width=4,height=3,units="in",dpi=300)
+  labs(x="Elevation (m)", y="Probability of kill")+
+  mytheme+
+  guides(color=guide_legend(override.aes=list(fill=NA)))+
+  scale_x_continuous(breaks = x.axis, labels = x.axis.real)
+ggsave(here("figures/elevation.bind.png"),width=5,height=3.5,units="in",dpi=300)
 
+min.x <- round(min(premod$canopy_cover),dig=-1)
+max.x <- round(max(premod$canopy_cover),dig=-1)
+int.length <- (max.x-min.x)/5
+x.axis.real <- seq(from=min.x,to=max.x,by=int.length)
+x.axis <- (x.axis.real - mean(premod$canopy_cover))/
+  sd(premod$canopy_cover)
 canopy<-ggpredict(elk1, terms="canopy_cover [all]")
 canopy$species<-"Elk"
 canopy1<-ggpredict(mule1, terms="canopy_cover [all]")
@@ -332,13 +345,17 @@ ggplot(canopy.bind, aes(x, predicted)) +
   geom_smooth(aes(col=species))+
   scale_color_manual(values = c("#436658","#b4673b"), 
                      name = "",labels=c("Elk","Mule deer"))+
-  labs(x="Canopy cover", y="Probability of kill")+
-  theme(legend.key = element_rect(fill="white"),
-        legend.position="top",
-        legend.box.spacing = unit(0,"in"))+
+  labs(x="Canopy cover (%)", y="Probability of kill")+
+  mytheme+
+  scale_x_continuous(breaks = x.axis, labels = x.axis.real)+
   guides(color=guide_legend(override.aes=list(fill=NA)))
-ggsave(here("figures/canopy.bind1.png"),width=4,height=3,units="in",dpi=300)
+ggsave(here("figures/canopy.bind.png"),width=5,height=3.5,units="in",dpi=300)
 
+min.x <- round(min(premod$slope),dig=-1)
+max.x <- round(max(premod$slope),dig=-1)
+int.length <- (max.x-min.x)/5
+x.axis.real <- seq(from=min.x,to=max.x,by=int.length)
+x.axis <- (x.axis.real - mean(premod$slope))/sd(premod$slope)
 slope<-ggpredict(elk1, terms="slope [all]")
 slope$species<-"Elk"
 slope1<-ggpredict(mule1, terms="slope [all]")
@@ -350,12 +367,11 @@ ggplot(slope.bind, aes(x, predicted)) +
   geom_line(aes(col=species),size=1)+
   scale_color_manual(values = c("#436658","#b4673b"), 
                      name = "",labels=c("Elk","Mule deer"))+
-  labs(x="Slope", y="Probability of kill")+
-  theme(legend.key = element_rect(fill="white"),
-        legend.position="top",
-        legend.box.spacing = unit(0,"in"))+
+  labs(x="Slope (degrees)", y="Probability of kill")+
+  mytheme+
+  scale_x_continuous(breaks = x.axis, labels = x.axis.real)+
   guides(color=guide_legend(override.aes=list(fill=NA)))
-ggsave(here("figures/slope.bind1.png"),width=4,height=3,units="in",dpi=300)
+ggsave(here("figures/slope.bind.png"),width=5,height=3.5,units="in",dpi=300)
 ```
 
 ```{r raw data plots}
