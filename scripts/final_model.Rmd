@@ -89,7 +89,7 @@ elk.cano<-glm(kill~canopy_cover,data=elk.mod,
           family=binomial,na.action = "na.fail")
 summary(elk1)
 vif(elk)
-dredge(elk)
+dredge(elk1)
 confint(elk)
 ```
 
@@ -106,7 +106,7 @@ mule.cano<-glm(kill~canopy_cover, data=mule.mod,
           family=binomial,na.action = "na.fail")
 summary(mule1)
 vif(mule)
-dredge(mule)
+dredge(mule1)
 confint(mule)
 ```
 
