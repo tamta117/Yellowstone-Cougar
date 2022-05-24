@@ -314,7 +314,7 @@ elev$species<-"Elk"
 elev1<-ggpredict(mule1, terms="elevation [all]")
 elev1$species<-"Mule deer"
 elev.bind<-bind_rows(elev,elev1)
-library(ggplot2)
+
 ggplot(elev.bind, aes(x, predicted)) + 
   geom_ribbon(data=elev,aes(ymin=conf.low, ymax=conf.high), 
               alpha=0.15,fill="#436658")+
